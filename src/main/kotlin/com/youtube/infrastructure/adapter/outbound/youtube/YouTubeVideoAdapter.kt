@@ -34,17 +34,20 @@ class YouTubeVideoAdapter(
             .get()
             .build()
 
-        val response = httpClient.newCall(request).execute()
+        httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                val errorBody = response.body?.string().orEmpty()
+                throw IOException(
+                    "Erro na requisicao a API do YouTube: ${response.code} - ${response.message}. $errorBody"
+                )
+            }
 
-        if (!response.isSuccessful) {
-            throw IOException("Erro na requisicao a API do YouTube: ${response.code} - ${response.message}")
+            val responseBody = response.body?.string()
+                ?: throw IOException("Resposta vazia da API do YouTube")
+
+            val searchResponse = gson.fromJson(responseBody, YouTubeSearchResponse::class.java)
+
+            return VideoMapper.toDomainList(searchResponse.items.orEmpty())
         }
-
-        val responseBody = response.body?.string()
-            ?: throw IOException("Resposta vazia da API do YouTube")
-
-        val searchResponse = gson.fromJson(responseBody, YouTubeSearchResponse::class.java)
-
-        return VideoMapper.toDomainList(searchResponse.items)
     }
 }

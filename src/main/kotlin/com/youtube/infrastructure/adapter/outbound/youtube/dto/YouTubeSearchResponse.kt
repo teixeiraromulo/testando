@@ -1,7 +1,7 @@
 package com.youtube.infrastructure.adapter.outbound.youtube.dto
 
 data class YouTubeSearchResponse(
-    val items: List<YouTubeSearchItem>
+    val items: List<YouTubeSearchItem>?
 )
 
 data class YouTubeSearchItem(
